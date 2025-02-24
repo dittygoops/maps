@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMapEvents, useMap } from 'react-leaflet'
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, use } from 'react';
 
 import "leaflet/dist/leaflet.css";
 
@@ -7,6 +7,7 @@ const Map = () => {
     const [center, setCenter] = useState({ lat: 51.505, lng: -0.09 });
     const [radius, setRadius] = useState(20);
     const animateRef = useRef(true);
+
 
     function HandleMapEvents() {
         const map = useMap();
@@ -19,6 +20,24 @@ const Map = () => {
                 map.off('move')
             }
         }, [map])
+
+        useEffect(() => {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const newCenter = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    setCenter(newCenter);
+                    map.setView(newCenter, 14, {
+                        animate: animateRef.current,
+                        duration: 0.5 // Reduce duration to 0.5 seconds
+                    });
+                }, (error) => {
+                    console.error("Error getting location:", error);
+                });
+            }
+        }, [map]);
         
         return null
     }
@@ -39,7 +58,7 @@ const Map = () => {
 
     return (
         <div className='h-full w-full'>
-            <MapContainer center={center} zoom={13} scrollWheelZoom={true}>
+            <MapContainer center={center} zoom={14} scrollWheelZoom={true}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
