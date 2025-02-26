@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMapEvents, useMap } from 'react-leaflet'
-import { useRef, useState, useEffect, useCallback, use } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import ProviderTileLayer from './ProviderTileLayer';
 
 import "leaflet/dist/leaflet.css";
 
@@ -7,39 +8,40 @@ const Map = () => {
     const [center, setCenter] = useState({ lat: 51.505, lng: -0.09 });
     const [radius, setRadius] = useState(20);
     const animateRef = useRef(true);
-
-
+    
     function HandleMapEvents() {
         const map = useMap();
-        
+        const hasGeolocated = useRef(false);
+
         useEffect(() => {
             map.on('move', () => {
                 setCenter(map.getCenter())
-            })
+            });
             return () => {
-                map.off('move')
-            }
-        }, [map])
-
-        useEffect(() => {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const newCenter = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                    setCenter(newCenter);
-                    map.setView(newCenter, 14, {
-                        animate: animateRef.current,
-                        duration: 0.5 // Reduce duration to 0.5 seconds
-                    });
-                }, (error) => {
-                    console.error("Error getting location:", error);
-                });
+                map.off('move');
             }
         }, [map]);
+
+        // useEffect(() => {
+        //     if (!hasGeolocated.current && "geolocation" in navigator) {
+        //         hasGeolocated.current = true;
+        //         navigator.geolocation.getCurrentPosition((position) => {
+        //             const newCenter = {
+        //                 lat: position.coords.latitude,
+        //                 lng: position.coords.longitude
+        //             };
+        //             setCenter(newCenter);
+        //             map.setView(newCenter, 14, {
+        //                 animate: animateRef.current,
+        //                 duration: 0.5 // Reduced duration
+        //             });
+        //         }, (error) => {
+        //             console.error("Error getting location:", error);
+        //         });
+        //     }
+        // }, [map]); // runs only once because of the hasGeolocated flag
         
-        return null
+        return null;
     }
 
     function SetViewOnClick({ animateRef }: { animateRef: React.MutableRefObject<boolean> }) {
@@ -59,11 +61,13 @@ const Map = () => {
     return (
         <div className='h-full w-full'>
             <MapContainer center={center} zoom={14} scrollWheelZoom={true}>
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                <ProviderTileLayer
+                    provider="Stadia.StamenToner"
+                    options={{
+                        attribution: 'Map data © <a href="https://stamen.com">Stamen</a> contributors',
+                    }}
                 />
-                <SetViewOnClick animateRef={animateRef}/>
+                <SetViewOnClick animateRef={animateRef} />
                 <HandleMapEvents />
 
                 <Marker position={center}>
@@ -86,7 +90,6 @@ const Map = () => {
                 />
             </div>
         </div>
-        
     )
 }
 
