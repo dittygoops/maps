@@ -2,7 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 
 // Ensure your API key is stored securely, for example in an environment variable (e.g., REACT_APP_STADIA_API_KEY)
-const apiKey = '4898770a-131b-4189-8501-35036971faa9';
+const apiKey = import.meta.env.VITE_STADIA_MAP_API_KEY;
 
 const StadiaMap: React.FC = () => {
   // Construct the tile URL by embedding your API key as a query parameter.
