@@ -19,8 +19,8 @@ type Restaurant = {
 };
 
 function App() {
-  const [center, setCenter] = useState<[number, number]>([33.4138992, -111.9303117])
-  const [radius, setRadius] = useState<number>(3)
+  const [center, setCenter] = useState<[number, number]>([33.4200832, -111.9377963])
+  const [radius, setRadius] = useState<number>(0.75)
 
   // Initialize with empty array and fetch data
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);

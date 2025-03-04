@@ -4,28 +4,40 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import markerImg from './../assets/map-pin.svg';
 import coloredMarker from './../assets/colored-map-pin.svg';
+import coloredMarker2 from './../assets/colored-map-pin2.svg';
 import InputSlider from './Slider';
 
 // Create a custom grayscale marker icon.
 const customGrayscaleIcon = L.icon({
   iconUrl: markerImg,
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/images/marker-shadow.png',
-  iconSize: [60, 60], // size of the icon
-  iconAnchor: [30, 30], // point of the icon which will correspond to marker's location
-  popupAnchor: [30, 30], // point from which the popup should open relative to the iconAnchor
-  shadowSize: [60, 60], // size of the shadow
-  shadowAnchor: [20, 30] // the same for the shadow
+  iconSize: [30, 30], // size of the icon
+  iconAnchor: [0, 0], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, 0], // point from which the popup should open relative to the iconAnchor
+  shadowSize: [30, 30], // size of the shadow
+  shadowAnchor: [-5,0 ] // the same for the shadow
 });
 
 // Create a custom colored marker icon.
 const customColoredIcon = L.icon({
   iconUrl: coloredMarker,
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/images/marker-shadow.png',
-  iconSize: [60, 60], // size of the icon
-  iconAnchor: [30, 30], // point of the icon which will correspond to marker's location
-  popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
-  shadowSize: [60, 60], // size of the shadow
-  shadowAnchor: [20, 30] // the same for the shadow
+  iconSize: [40, 40], // size of the icon
+  iconAnchor: [0, 0], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, 0], // point from which the popup should open relative to the iconAnchor
+  shadowSize: [40, 40], // size of the shadow
+  shadowAnchor: [0, 0] // the same for the shadow
+});
+
+// Create a custom colored marker icon.
+const customColoredIcon2 = L.icon({
+  iconUrl: coloredMarker2,
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/images/marker-shadow.png',
+  iconSize: [20, 20], // size of the icon
+  iconAnchor: [0, 0], // point of the icon which will correspond to marker's location
+  popupAnchor: [0, 0], // point from which the popup should open relative to the iconAnchor
+  shadowSize: [10, 20], // size of the shadow
+  shadowAnchor: [0, 0] // the same for the shadow
 });
 
 // RecenterMap component that updates the map view when center changes.
@@ -39,6 +51,29 @@ const RecenterMap: React.FC<{ center: [number, number]}> = ({ center }) => {
   
   return null;
 }
+
+// This component wraps the Marker and uses the map instance to flyTo on click.
+const FlyToMarker: React.FC<{ restaurant: any }> = ({ restaurant }) => {
+  const map = useMap();
+
+  return (
+    <Marker
+      position={[restaurant.lat, restaurant.long]}
+      icon={customColoredIcon}
+      eventHandlers={{
+        click: () => {
+          // Use the map's flyTo method to smoothly pan to the marker location.
+          map.flyTo([restaurant.lat, restaurant.long], map.getZoom(), {
+            animate: true,
+            duration: 1.5, // duration in seconds
+          });
+        },
+      }}
+    >
+      <Popup>{restaurant.original_name}</Popup>
+    </Marker>
+  );
+};
 
 interface RestaurantsMapProps {
   center: [number, number];
@@ -92,10 +127,7 @@ const RestaurantsMap: React.FC<RestaurantsMapProps> = ({ center, radius, restaur
 
         {/* Display restaurant markers on the map. */}
         {restaurants.map((restaurant: any) => (
-          <Marker key={restaurant.id} position={[restaurant.lat, restaurant.long]} icon={customColoredIcon}>
-            {/* Display restaurant name on marker click. */}
-            <Popup>{restaurant.original_name}</Popup>
-          </Marker>
+          <FlyToMarker key={restaurant.id} restaurant={restaurant} />
         ))}
 
         {/* Recenter the map when the center changes. */}
