@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Circle, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Circle, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import markerImg from '../assets/map-pin.svg';
+import markerImg from './../assets/map-pin.svg';
+import InputSlider from './Slider';
 
 // Create a custom grayscale marker icon.
 const customGrayscaleIcon = L.icon({
@@ -12,42 +13,64 @@ const customGrayscaleIcon = L.icon({
   iconAnchor: [30, 30], // point of the icon which will correspond to marker's location
   popupAnchor: [30, 30], // point from which the popup should open relative to the iconAnchor
   shadowSize: [60, 60], // size of the shadow
+  shadowAnchor: [20, 30] // the same for the shadow
 });
 
-// Component that listens to map move events and updates the center state.
-const CenterUpdater: React.FC<{ setCenter: React.Dispatch<React.SetStateAction<[number, number]>> }> = ({ setCenter }) => {
+// RecenterMap component that updates the map view when center changes.
+const RecenterMap: React.FC<{ center: [number, number], setCenter: React.Dispatch<React.SetStateAction<[number, number]>>, setCircleCenter: React.Dispatch<React.SetStateAction<[number, number]>> }> = ({ center, setCenter, setCircleCenter }) => {
+  const map = useMap();
+
+  // Update the map view when the center changes.
+  useEffect(() => {
+    map.setView(center);
+  }, [center, map]);
+
   useMapEvents({
+    // Update the circle and marker center when the map is dragged.
     move: (event) => {
+      const newCenter = event.target.getCenter();
+      setCircleCenter([newCenter.lat, newCenter.lng]);
+    },
+
+    // Update the center when the map is dragged.
+    drag: (event) => {
       const newCenter = event.target.getCenter();
       setCenter([newCenter.lat, newCenter.lng]);
     },
+    
+    // Fly to the clicked location and update the center.
+    click: (event) => {
+      event.target.flyTo(event.latlng, event.target.getZoom(), {
+        animate: true,
+        duration: 2.5, // duration in seconds
+      });
+
+      setCenter([event.latlng.lat, event.latlng.lng]);
+    }
   });
   return null;
 };
 
-// RecenterMap component that updates the map view when center changes.
-const RecenterMap: React.FC<{ center: [number, number] }> = ({ center }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center);
-  }, [center, map]);
-  return null;
-};
+interface StadiaMapProps {
+  center: [number, number];
+  setCenter: React.Dispatch<React.SetStateAction<[number, number]>>;
+  radius: number;
+  setRadius: React.Dispatch<React.SetStateAction<number>>;
+}
 
-const StadiaMap: React.FC = () => {
-  const defaultCenter: [number, number] = [59.444351, 24.750645];
-  const [center, setCenter] = useState<[number, number]>(defaultCenter);
-  const [radius, setRadius] = useState<number>(402); // in meters
+const StadiaMap: React.FC<StadiaMapProps> = ({ center, setCenter, radius, setRadius }) => {
+  const [circleCenter, setCircleCenter] = useState<[number, number]>(center);
 
-  // Use the Geolocation API once when the component mounts.
+  // Get the user's current location and set the map center.
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        (position: GeolocationPosition) => {
           const { latitude, longitude } = position.coords;
           setCenter([latitude, longitude]);
+          setCircleCenter([latitude, longitude]);
         },
-        (error) => {
+        (error: GeolocationPositionError) => {
           console.error("Error obtaining geolocation", error);
         }
       );
@@ -56,7 +79,7 @@ const StadiaMap: React.FC = () => {
     }
   }, []);
 
-  // Construct the tile URL using your API key.
+  // Stadia Maps tile URL with API key.
   const tileUrl = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${import.meta.env.VITE_STADIA_MAP_API_KEY}`;
 
   return (
@@ -66,31 +89,11 @@ const StadiaMap: React.FC = () => {
           url={tileUrl}
           attribution="© Stadia Maps, © OpenMapTiles, © OpenStreetMap contributors"
         />
-        <Circle center={center} radius={radius} pathOptions={{ color: 'blue' }} />
-        <Marker position={center} icon={customGrayscaleIcon}>
-          <Popup>The map center</Popup>
-        </Marker>
-        {/* Update center state when the map is panned */}
-        <CenterUpdater setCenter={setCenter} />
-        {/* Recenter the map whenever the center state changes */}
-        <RecenterMap center={center} />
+        <Circle center={circleCenter} radius={radius * 1609.34} pathOptions={{ color: 'blue' }} />
+        <Marker position={circleCenter} icon={customGrayscaleIcon}></Marker>
+        <RecenterMap center={center} setCenter={setCenter} setCircleCenter={setCircleCenter} />
       </MapContainer>
-      
-      <div className="p-4">
-        <label htmlFor="radiusSlider" className="block mb-2 text-center">
-          Adjust Search Radius: {(radius / 1609.34).toFixed(2)} miles
-        </label>
-        <input
-          id="radiusSlider"
-          type="range"
-          min="0.25"
-          max="5"
-          step="0.25"
-          value={(radius / 1609.34).toFixed(2)}
-          onChange={(e) => setRadius(Number(e.target.value) * 1609.34)}
-          className="w-full"
-        />
-      </div>
+      <InputSlider value={radius} onChange={setRadius} />
     </div>
   );
 };

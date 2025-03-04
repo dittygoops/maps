@@ -3,4 +3,15 @@
 .leaflet-container {
     height: 100%;
     width: 100%;
-  }
+}
+
+
+/* Custom overrides for Photon search results using Tailwind utilities */
+.leaflet-control.photon {
+  @apply relative; /* ensure the control container is positioned relative */
+}
+
+.leaflet-control.photon .photon-results {
+  @apply absolute top-full left-0 right-0 z-50 bg-white shadow-lg rounded overflow-y-auto;
+  max-height: 300px; /* you can adjust this value as needed */
+}

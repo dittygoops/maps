@@ -14,10 +14,14 @@
     "@tailwindcss/vite": "^4.0.8",
     "@types/geojson": "^7946.0.16",
     "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.2.0",
     "leaflet-providers": "^2.0.0",
-    "react": "^19.0.0-rc.1",
-    "react-dom": "^19.0.0-rc.1",
+    "leaflet.photon": "^0.9.1",
+    "pelias-leaflet-plugin": "^1.12.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
+    "react-scripts": "^5.0.1",
     "tailwindcss": "^4.0.8"
   },
   "devDependencies": {
