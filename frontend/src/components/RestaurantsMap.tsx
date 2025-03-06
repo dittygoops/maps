@@ -5,7 +5,6 @@ import 'leaflet/dist/leaflet.css';
 import markerImg from './../assets/map-pin.svg';
 import coloredMarker from './../assets/colored-map-pin.svg';
 import coloredMarker2 from './../assets/colored-map-pin2.svg';
-import InputSlider from './Slider';
 
 // Create a custom grayscale marker icon.
 const customGrayscaleIcon = L.icon({
@@ -46,7 +45,10 @@ const RecenterMap: React.FC<{ center: [number, number]}> = ({ center }) => {
 
   // Update the map view when the center changes.
   useEffect(() => {
-    map.setView(center);
+    map.flyTo(center, map.getZoom(), {
+      animate: true,
+      duration: 1.5, // duration in seconds
+    });
   }, [center, map]);
   
   return null;
@@ -86,6 +88,7 @@ const RestaurantsMap: React.FC<RestaurantsMapProps> = ({ center, radius, restaur
   const tileUrl = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${import.meta.env.VITE_STADIA_MAP_API_KEY}`;
 
   const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
+  const [mapCenter, setMapCenter] = useState(center);
 
   const selectRestaurant = (id: string) => {
     if (selectedRestaurant === id) {
@@ -106,7 +109,10 @@ const RestaurantsMap: React.FC<RestaurantsMapProps> = ({ center, radius, restaur
                       ? 'bg-white text-black' 
                       : 'bg-black text-white hover:bg-white hover:text-black'
                   } my-3 w-11/12`} 
-                  onClick={() => selectRestaurant(restaurant.id)}
+                  onClick={() => {
+                    selectRestaurant(restaurant.id);
+                    setMapCenter([restaurant.lat, restaurant.long]);
+                  }}
                 >
                   <div className="flex justify-between w-full">
                     <div className="flex flex-col">
@@ -117,7 +123,7 @@ const RestaurantsMap: React.FC<RestaurantsMapProps> = ({ center, radius, restaur
                 </div>
             ))}
       </div>
-      <MapContainer center={center} zoom={16} className="h-screen w-full">
+      <MapContainer center={mapCenter} zoom={16} className="h-screen w-full">
         <TileLayer
           url={tileUrl}
           attribution="© Stadia Maps, © OpenMapTiles, © OpenStreetMap contributors"
@@ -131,7 +137,7 @@ const RestaurantsMap: React.FC<RestaurantsMapProps> = ({ center, radius, restaur
         ))}
 
         {/* Recenter the map when the center changes. */}
-        <RecenterMap center={center} />
+        <RecenterMap center={mapCenter} />
       </MapContainer>
     </div>
   );
