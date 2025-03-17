@@ -5,13 +5,30 @@
     width: 100%;
 }
 
+/* Custom styles for the Photon Control */
 
-/* Custom overrides for Photon search results using Tailwind utilities */
-.leaflet-control.photon {
-  @apply relative; /* ensure the control container is positioned relative */
+.photon-input {
+  width: 250px;
+  border: 2px solid #ccc;
+  padding: 6px 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  background-color: #fff;
 }
 
-.leaflet-control.photon .photon-results {
-  @apply absolute top-full left-0 right-0 z-50 bg-white shadow-lg rounded overflow-y-auto;
-  max-height: 300px; /* you can adjust this value as needed */
+.photon-input:focus {
+  width: 250px;
+}
+
+.photon-autocomplete {
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.photon-autocomplete li {
+  padding: 6px 10px;
+}
+
+.photon-autocomplete li:hover {
+  background-color: #f0f0f0
 }

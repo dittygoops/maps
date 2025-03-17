@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 
 import StadiaMap from "./components/StadiaMap"
 import RestaurantsMap from "./components/RestaurantsMap"
-import NewRestaurantsMap from "./components/NewRestaurantsMap";
 
 // Import as a URL instead of direct content
 import restaurantsDataUrl from './RestaurantsData.txt?url';
@@ -52,9 +51,8 @@ function App() {
           <h1 className="text-2xl font-bold">I WANT </h1>
         </div>
         <div className="flex-grow">
-          {/* <StadiaMap center={center} setCenter={setCenter} radius={radius} setRadius={setRadius}/> */}
-          <RestaurantsMap center={center} radius={radius} restaurants={restaurants} />
-          {/* <NewRestaurantsMap center={center} setCenter={setCenter} radius={radius} restaurants={restaurants} /> */}
+          <StadiaMap center={center} setCenter={setCenter} radius={radius} setRadius={setRadius}/>
+          {/* <RestaurantsMap center={center} radius={radius} restaurants={restaurants} /> */}
         </div>
       </div>
     </div>
